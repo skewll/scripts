@@ -4,14 +4,26 @@
 VERSION="v0.5.3"
 ARCH=$(uname -m)
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
-URL="https://github.com/peco/peco/releases/download/$VERSION/peco_${OS}_${ARCH}.tar.gz"
 INSTALL_DIR="/usr/local/bin"
 
-# Check for supported architecture
-if [[ "$ARCH" != "x86_64" && "$ARCH" != "amd64" ]]; then
-    echo "Unsupported architecture: $ARCH. Only x86_64/amd64 are supported."
-    exit 1
-fi
+# Determine architecture and set URL
+case "$ARCH" in
+    x86_64|amd64)
+        ARCH="amd64"
+        ;;
+    aarch64)
+        ARCH="arm64"
+        ;;
+    armv7l)
+        ARCH="arm"
+        ;;
+    *)
+        echo "Unsupported architecture: $ARCH"
+        exit 1
+        ;;
+esac
+
+URL="https://github.com/peco/peco/releases/download/$VERSION/peco_${OS}_${ARCH}.tar.gz"
 
 # Check if peco is already installed
 if command -v peco &> /dev/null; then
@@ -28,14 +40,9 @@ fi
 echo "Downloading Peco $VERSION for $ARCH architecture..."
 curl -sL "$URL" -o peco.tar.gz
 
-# Check if the file exists after download
-if [[ ! -f peco.tar.gz ]]; then
-    echo "Download failed. Please check the URL or architecture compatibility."
-    exit 1
-fi
-
+# Extract the file without checking file type
 echo "Extracting files..."
-tar -xzf peco.tar.gz
+tar -xvzf peco.tar.gz
 rm peco.tar.gz
 
 # Move binary to /usr/local/bin
